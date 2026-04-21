@@ -1,0 +1,7 @@
+flask
+groq
+langchain
+langchain-community
+faiss-cpu
+python-dotenv
+pyngrok
