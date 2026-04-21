@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AutoStream AI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  *{box-sizing:border-box}
+  body{background:linear-gradient(135deg,#0f0f0f 0%,#1a1a2e 50%,#16213e 100%);min-height:100vh}
+  #chat-box{scroll-behavior:smooth}
+  .user-bubble{background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:18px 18px 4px 18px}
+  .bot-bubble{background:linear-gradient(135deg,#1e293b,#334155);border-radius:18px 18px 18px 4px;border:1px solid #334155}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .msg-in{animation:fadeIn .3s ease-out}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+  .dot{animation:bounce 1.2s infinite;width:8px;height:8px;border-radius:50%;background:#6366f1;display:inline-block}
+  .dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+  textarea{resize:none}
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-thumb{background:#334155;border-radius:3px}
+</style>
+</head>
+<body class="flex items-center justify-center p-4">
+<div class="w-full max-w-2xl flex flex-col bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-700/50 overflow-hidden" style="height:90vh">
+  <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-700/50 bg-gray-900/60">
+    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-xl">🎬</div>
+    <div>
+      <p class="text-white font-semibold text-sm">AutoStream AI</p>
+      <p class="text-green-400 text-xs">● Powered by Groq LLaMA 3</p>
+    </div>
+    <button onclick="resetChat()" class="ml-auto text-gray-400 hover:text-white text-xs border border-gray-600 px-3 py-1 rounded-lg transition">New Chat</button>
+  </div>
+  <div id="chat-box" class="flex-1 overflow-y-auto px-4 py-6 flex flex-col gap-4">
+    <div class="flex gap-3 msg-in">
+      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm">🤖</div>
+      <div class="bot-bubble px-4 py-3 text-gray-100 text-sm max-w-xs leading-relaxed">
+        👋 Hi! I am AutoStream AI.<br>Ask me about <b>pricing</b>, <b>features</b>, or how to <b>get started</b>!
+      </div>
+    </div>
+  </div>
+  <div id="typing" class="hidden px-6 pb-2">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-sm">🤖</div>
+      <div class="bot-bubble px-4 py-3 flex gap-1 items-center">
+        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+  </div>
+  <div class="px-4 py-4 border-t border-gray-700/50 bg-gray-900/60">
+    <div class="flex gap-3 items-end bg-gray-800/60 rounded-2xl px-4 py-3 border border-gray-700/50 focus-within:border-indigo-500/50 transition">
+      <textarea id="input-box" rows="1" placeholder="Ask about pricing, features, or sign up..."
+        class="flex-1 bg-transparent text-gray-100 text-sm placeholder-gray-500 outline-none max-h-28 leading-relaxed"
+        onkeydown="handleKey(event)"></textarea>
+      <button onclick="sendMessage()"
+        class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-lg transition hover:scale-105">&#10148;</button>
+    </div>
+    <p class="text-gray-600 text-xs text-center mt-2">AutoStream AI · Groq LLaMA 3 · Ashish Kumar Nayak</p>
+  </div>
+</div>
+<script>
+  const chatBox=document.getElementById('chat-box');
+  const inputBox=document.getElementById('input-box');
+  const typing=document.getElementById('typing');
+  const BASE_URL=window.location.origin;
+  function scrollBottom(){chatBox.scrollTop=chatBox.scrollHeight;}
+  function appendMessage(role,text){
+    const isUser=role==='user';
+    const wrapper=document.createElement('div');
+    wrapper.className='flex gap-3 msg-in '+(isUser?'flex-row-reverse':'');
+    const avatar=document.createElement('div');
+    avatar.className='w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 '+(isUser?'bg-gradient-to-br from-purple-500 to-pink-500':'bg-gradient-to-br from-indigo-500 to-purple-600');
+    avatar.textContent=isUser?'🧑':'🤖';
+    const bubble=document.createElement('div');
+    bubble.className=(isUser?'user-bubble text-white':'bot-bubble text-gray-100')+' px-4 py-3 text-sm max-w-xs leading-relaxed shadow-md whitespace-pre-wrap';
+    bubble.innerHTML=text.replace(/\*\*(.*?)\*\*/g,'<b>$1</b>');
+    wrapper.appendChild(avatar);wrapper.appendChild(bubble);
+    chatBox.appendChild(wrapper);scrollBottom();
+  }
+  async function sendMessage(){
+    const msg=inputBox.value.trim();
+    if(!msg)return;
+    appendMessage('user',msg);
+    inputBox.value='';inputBox.style.height='auto';
+    typing.classList.remove('hidden');scrollBottom();
+    try{
+      const res=await fetch(`${BASE_URL}/chat`,{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message:msg})
+      });
+      const data=await res.json();
+      typing.classList.add('hidden');
+      appendMessage('bot',data.response||data.error||'⚠️ No response');
+    }catch(err){
+      typing.classList.add('hidden');
+      appendMessage('bot','⚠️ Backend not reachable. Is Flask running?');
+    }
+  }
+  async function resetChat(){
+    await fetch(`${BASE_URL}/reset`,{method:'POST'});
+    chatBox.innerHTML='';
+    appendMessage('bot','🔄 Session reset! How can I help you today?');
+  }
+  function handleKey(e){
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+    inputBox.style.height='auto';
+    inputBox.style.height=inputBox.scrollHeight+'px';
+  }
+</script>
+</body></html>
