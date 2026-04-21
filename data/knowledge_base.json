@@ -1,0 +1,37 @@
+{
+  "product": "AutoStream",
+  "description": "Automated AI-powered video editing tools for content creators.",
+  "pricing": {
+    "basic": {
+      "price": "$29/month",
+      "videos_per_month": 10,
+      "resolution": "720p",
+      "support": "Email (business hours)",
+      "ai_captions": false
+    },
+    "pro": {
+      "price": "$79/month",
+      "videos_per_month": "Unlimited",
+      "resolution": "4K",
+      "support": "24/7 priority support",
+      "ai_captions": true
+    }
+  },
+  "features": [
+    "AI-powered automated video editing",
+    "Smart scene detection and auto-cutting",
+    "Auto subtitle and caption generation (Pro only)",
+    "Multi-platform export: YouTube, Instagram, TikTok, Twitch",
+    "Cloud storage for all projects",
+    "One-click branding with logos and color schemes",
+    "Background noise removal",
+    "Real-time collaboration (Pro only)"
+  ],
+  "policies": {
+    "refund": "No refunds after 7 days of purchase.",
+    "free_trial": "7-day free trial available for all new users.",
+    "support": "24/7 support is available only on the Pro plan.",
+    "cancellation": "Cancel anytime; access continues until billing period ends.",
+    "data_privacy": "All user data is encrypted and never shared with third parties."
+  }
+}
